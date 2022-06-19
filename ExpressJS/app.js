@@ -1,7 +1,6 @@
 const express = require("express");
-
 const app = express();
-
+const Joi = require("joi");
 app.use(express.json()); // it is necessary to post. that means express have a body also in body have a json so split it.
 
 const users = [
@@ -24,6 +23,8 @@ const users = [
     age: 32,
   },
 ];
+
+/* XXXXXXXXXXXXXXXXXXXXXX | GET | XXXXXXXXXXXXXXXXXXXXXX*/
 
 app.get("/", (req, res) => {
   res.send("<h1 style='color:purple'>Welcome Home Page With Express</h1>");
@@ -62,21 +63,38 @@ app.get("/users/:id", (req, res) => {
   }
 });
 
-/*POST*/
+/* XXXXXXXXXXXXXXXXXXXXXX | POST | XXXXXXXXXXXXXXXXXXXXXXXX*/
 
 app.post("/users", (request, response) => {
-  const newUser = {
-    id: users.length + 1,
-    name: request.body.name,
-    surname: request.body.surname,
-    age: request.body.age,
-  };
-  if (users.find((user) => user.name.toString() === newUser.name.toString())) {
-    console.log("This user is already using");
-    // can't add same user name like same id from database :)
+  //Using Joi to validate data
+  const schema = Joi.object({
+    name: Joi.string().min(2).max(30).required(),
+    surname: Joi.string().min(2).max(30).required(),
+    age: Joi.number().integer().max(199).required(),
+  });
+
+  const schemaResult = schema.validate(request.body);
+  console.log(Boolean(schemaResult.error)); // this return a value and if conditions dont provide, it return value and error area.
+  console.log(schemaResult);
+  if (!schemaResult.error) {
+    const newUser = {
+      id: users.length + 1,
+      name: request.body.name,
+      surname: request.body.surname,
+      age: request.body.age,
+    };
+    if (
+      users.find((user) => user.name.toString() === newUser.name.toString())
+    ) {
+      console.log("This user is already using");
+      // can't add same user name like same id from database :)
+    } else {
+      users.push(newUser);
+      response.send(newUser);
+    }
   } else {
-    users.push(newUser);
-    response.send(newUser);
+    console.log("Please entry your information correctly");
+    response.status(400).send(schemaResult.error.details[0].message);
   }
 });
 
