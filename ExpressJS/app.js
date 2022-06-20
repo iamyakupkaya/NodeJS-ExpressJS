@@ -2,6 +2,12 @@ const express = require("express");
 const app = express();
 const Joi = require("joi");
 app.use(express.json()); // it is necessary to post. that means express have a body also in body have a json so split it.
+app.use(express.urlencoded()); // this is necessary for using data with form data
+// aşağıdaki kod dışarıya açık klasörlerimize erişime açtığımızda kullanılmak için
+// bunun için dosyamızı public klasörünün içine koyalımç
+app.use(express.static("public")); // http://localhost:3000/read.txt
+
+
 
 /* XXXXXXXXXXXXXXXXXXXXXX | LOCAL API | XXXXXXXXXXXXXXXXXXXXXX */
 const users = [
